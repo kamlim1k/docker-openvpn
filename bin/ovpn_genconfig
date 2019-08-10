@@ -92,6 +92,7 @@ usage() {
     echo
     echo "optional arguments:"
     echo " -2    Enable two factor authentication using Google Authenticator."
+    echo " -3    Enable open ldap authentication"
     echo " -a    Authenticate  packets with HMAC using the given message digest algorithm (auth)."
     echo " -b    Disable 'push block-outside-dns'"
     echo " -c    Enable client-to-client option"
@@ -172,7 +173,7 @@ OVPN_TLS_CIPHER=''
 [ -r "$OVPN_ENV" ] && source "$OVPN_ENV"
 
 # Parse arguments
-while getopts ":a:e:E:C:T:r:s:du:bcp:n:k:DNm:f:tz2" opt; do
+while getopts ":a:e:E:C:T:r:s:du:bcp:n:k:DNm:f:tz23" opt; do
     case $opt in
         a)
             OVPN_AUTH="$OPTARG"
@@ -250,6 +251,9 @@ while getopts ":a:e:E:C:T:r:s:du:bcp:n:k:DNm:f:tz2" opt; do
         2)
             OVPN_OTP_AUTH=1
             ;;
+        3)
+            OVPN_LDAP_AUTH=1
+            ;;
         f)
             OVPN_FRAGMENT="$OPTARG"
             ;;
@@ -292,7 +296,7 @@ set -u
 [ "${#OVPN_ROUTES[@]}" == "0" ] && [ "$OVPN_DEFROUTE" == "1" ] && OVPN_ROUTES+=("192.168.254.0/24")
 
 # Preserve config
-if [ -f "$OVPN_ENV" ]; then
+if [ -f "$  " ]; then
     bak_env=$OVPN_ENV.$(date +%s).bak
     echo "Backing up $OVPN_ENV -> $bak_env"
     mv "$OVPN_ENV" "$bak_env"
@@ -385,6 +389,14 @@ cat $TMP_PUSH_CONFIGFILE >> "$conf"
 if [ -n "${OVPN_OTP_AUTH:-}" ]; then
     echo -e "\n\n# Enable OTP+PAM for user authentication" >> "$conf"
     echo "plugin /usr/lib/openvpn/plugins/openvpn-plugin-auth-pam.so openvpn" >> "$conf"
+    echo "reneg-sec 0" >> "$conf"
+fi
+
+# Append optional LDAP authentication support
+if [ -n "${OVPN_LDAP_AUTH:-}" ]; then
+    echo -e "\n\n# Enable LDAP for user authentication" >> "$conf"
+    echo "username-as-common-name" >> "$conf"
+    echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so ${OPENVPN:-}/auth-ldap.conf" >> "$conf"
     echo "reneg-sec 0" >> "$conf"
 fi
 
