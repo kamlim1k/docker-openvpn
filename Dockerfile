@@ -36,5 +36,8 @@ CMD ["ovpn_run"]
 ADD ./bin /usr/local/bin
 RUN chmod a+x /usr/local/bin/*
 
+#Temporary remove line until EasyRsa fix will be pushed. https://github.com/OpenVPN/easy-rsa/issues/261
+RUN sed -i '/RANDFILE		= $ENV::EASYRSA_PKI\/\.rnd/d' $EASYRSA/openssl-easyrsa.cnf
+
 # Add support for OTP authentication using a PAM module
 ADD ./otp/openvpn /etc/pam.d/
