@@ -396,7 +396,7 @@ fi
 if [ -n "${OVPN_LDAP_AUTH:-}" ]; then
     echo -e "\n\n# Enable LDAP for user authentication" >> "$conf"
     echo "username-as-common-name" >> "$conf"
-    echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so ${OPENVPN:-}/auth-ldap.conf" >> "$conf"
+    echo "plugin /usr/lib/openvpn/openvpn-auth-ldap.so ${OPENVPN:-}/auth/auth-ldap.conf" >> "$conf"
     echo "reneg-sec 0" >> "$conf"
 fi
 
